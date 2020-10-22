@@ -84,7 +84,7 @@ def read_fasta(amplicon_file, minseqlen):
        Returns
        --------
        
-       seq_gen
+       seq
     """
 
 	with open(amplicon_file, "r") as fasta_file :
@@ -110,7 +110,7 @@ def dereplication_fulllength(amplicon_file, minseqlen, mincount):
            Returns
            --------
        
-           seq_dic
+           seq and count
          """
 	
 	seq_dic = {}
@@ -124,8 +124,56 @@ def dereplication_fulllength(amplicon_file, minseqlen, mincount):
 		if count >= mincount :
 			yield [seq, count]
 
+def get_chunks(sequence, chunk_size) :
+
+	"""take a sequence and a chunk_size as arguments,
+	   return a chunk-size length sub-sequences list
+	   
+	   Parametre
+           ----------
+       
+       	   sequence = amplicon sequence
+		   chunk_size : give the sub-sequence length
+       
+           Returns
+           --------
+       
+           chunk_seq
+         """
+
+	chunk_seq = []	
+	i=1
+	while(i*chunk_size < len(sequence)):
+		sub_seq = sequence[i*chunk_size-chunk_size:i*chunk_size]
+		chunk_seq.append(sub_seq)
+	i += 1
+	return chunk_seq
+
+def cut_kmer(sequence, kmer_size)
+
+		"""take a sequence and a kmer_size as arguments,
+	       return a kmer genrator
+	   
+	       Parametre
+           ----------
+       
+       	   sequence = amplicon sequence
+		   kmer_size : size of a kmer
+       
+           Returns
+           --------
+       
+           kmer
+         """
+	for i in range(len(sequence)-kmer_size+1):
+		kmer = sequence[i:i+kmer_size]
+		kmer_list.append(kmer)
+		yield kmer
+
+def get_unique_kmer(kmer_dict, sequence, id_seq, kmer_size)
 
 
+	
 
 #==============================================================
 # Main program
