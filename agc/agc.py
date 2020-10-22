@@ -23,13 +23,13 @@ from collections import Counter
 # ftp://ftp.ncbi.nih.gov/blast/matrices/
 import nwalign3 as nw
 
-__author__ = "Your Name"
+__author__ = "Noura Romari"
 __copyright__ = "Universite Paris Diderot"
-__credits__ = ["Your Name"]
+__credits__ = ["Noura Romari"]
 __license__ = "GPL"
 __version__ = "1.0.0"
-__maintainer__ = "Your Name"
-__email__ = "your@email.fr"
+__maintainer__ = "Noura Romari"
+__email__ = "n_a_e@hotmail.fr"
 __status__ = "Developpement"
 
 
@@ -55,20 +55,77 @@ def get_arguments():
     parser = argparse.ArgumentParser(description=__doc__, usage=
                                      "{0} -h"
                                      .format(sys.argv[0]))
-    parser.add_argument('-i', '-amplicon_file', dest='amplicon_file', type=isfile, required=True, 
+	parser.add_argument('-i', '-amplicon_file', dest='amplicon_file', type=isfile, required=True, 
                         help="Amplicon is a compressed fasta file (.fasta.gz)")
-    parser.add_argument('-s', '-minseqlen', dest='minseqlen', type=int, default = 400,
+	parser.add_argument('-s', '-minseqlen', dest='minseqlen', type=int, default = 400,
                         help="Minimum sequence length for dereplication")
-    parser.add_argument('-m', '-mincount', dest='mincount', type=int, default = 10,
+	parser.add_argument('-m', '-mincount', dest='mincount', type=int, default = 10,
                         help="Minimum count for dereplication")
-    parser.add_argument('-c', '-chunk_size', dest='chunk_size', type=int, default = 100,
+	parser.add_argument('-c', '-chunk_size', dest='chunk_size', type=int, default = 100,
                         help="Chunk size for dereplication")
-    parser.add_argument('-k', '-kmer_size', dest='kmer_size', type=int, default = 8,
+	parser.add_argument('-k', '-kmer_size', dest='kmer_size', type=int, default = 8,
                         help="kmer size for dereplication")
     parser.add_argument('-o', '-output_file', dest='output_file', type=str,
                         default="OTU.fasta", help="Output file")
     return parser.parse_args()
 
+
+def read_fasta(amplicon_file, minseqlen):
+
+	"""take a fastq file as argument and return a sequence generator,
+	   with a minimale sequence length = minseqlen.
+	   
+	   Parametre
+       ----------
+       
+       amplicon_file : fastq file with amplicon sequences
+       minseqlen : the minimale length of the selected amplicon sequences
+       
+       Returns
+       --------
+       
+       seq_gen
+    """
+    
+	seq_gen = []
+	with open(amplicon_file, "r") as fasta_file :
+		for line in fasta_file :
+			if not line.startswith(">") :
+				if len(line)>=minseqlen :
+					seq_gen.append(line.strip())
+	return seq_gen
+	
+def dereplication_fulllength(amplicon_file, minseqlen, mincount):
+	
+	"""take a fastq file, a minimale sequence length, 
+	   and a sequence minimale count as arguments.
+	   return a dictionnary with sequences and the count of each one.
+	   
+	   Parametre
+           ----------
+       
+       	   amplicon_file : fastq file with amplicon sequences
+           minseqlen : the minimale length of the selected amplicon sequences
+           mincount : the minimale occurence for an informative sequence
+       
+           Returns
+           --------
+       
+           seq_dic
+         """
+	
+	seq_dic_tot = {}
+	seq_dic = {}
+	seq_gen = read_fasta(amplicon_file, minseqlen)
+	for seq in seq_gen :
+		if seq in seq_dic_tot :
+			seq_dic_tot[seq] += 1
+		else :
+			seq_dic_tot[seq] = 1
+	for seq, count in seq_dic_tot.items():
+		if count >= mincount :
+			seq_dic[seq] = count
+	return seq_dic
 #==============================================================
 # Main program
 #==============================================================
