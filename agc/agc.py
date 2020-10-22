@@ -55,7 +55,7 @@ def get_arguments():
     parser = argparse.ArgumentParser(description=__doc__, usage=
                                      "{0} -h"
                                      .format(sys.argv[0]))
-	parser.add_argument('-i', '-amplicon_file', dest='amplicon_file', type=isfile, required=True, 
+	parser.add_argument('-i', '-amplicon_file', dest='amplicon_file', type=isfile, required=True,
                         help="Amplicon is a compressed fasta file (.fasta.gz)")
 	parser.add_argument('-s', '-minseqlen', dest='minseqlen', type=int, default = 400,
                         help="Minimum sequence length for dereplication")
@@ -86,15 +86,14 @@ def read_fasta(amplicon_file, minseqlen):
        
        seq_gen
     """
-    
-	seq_gen = []
+
 	with open(amplicon_file, "r") as fasta_file :
 		for line in fasta_file :
 			if not line.startswith(">") :
-				if len(line)>=minseqlen :
-					seq_gen.append(line.strip())
-	return seq_gen
-	
+				seq = line.strip
+			if len(seq)>=minseqlen :
+					yield seq
+
 def dereplication_fulllength(amplicon_file, minseqlen, mincount):
 	
 	"""take a fastq file, a minimale sequence length, 
@@ -114,18 +113,20 @@ def dereplication_fulllength(amplicon_file, minseqlen, mincount):
            seq_dic
          """
 	
-	seq_dic_tot = {}
 	seq_dic = {}
-	seq_gen = read_fasta(amplicon_file, minseqlen)
-	for seq in seq_gen :
-		if seq in seq_dic_tot :
-			seq_dic_tot[seq] += 1
+	for seq in read_fasta(amplicon_file, minseqlen) :
+		if seq in seq_dic :
+			seq_dic[seq] += 1
 		else :
-			seq_dic_tot[seq] = 1
-	for seq, count in seq_dic_tot.items():
+			seq_dic[seq] = 1
+	sec_dic_tr = sorted(seq_dic.items(), key=lambda item: item[1], reverse=True)
+	for seq, count in seq_dic_tr.items():
 		if count >= mincount :
-			seq_dic[seq] = count
-	return seq_dic
+			yield [seq, count]
+
+
+
+
 #==============================================================
 # Main program
 #==============================================================
